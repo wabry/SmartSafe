@@ -3,6 +3,11 @@
 #ifndef RING_BUF_H
 #define RING_BUF_H
 
+// C wrapper
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -41,6 +46,11 @@ bool rbuf_is_full(rbuf_ptr rbuf);
 
 // Returns true if the ring buffer is empty and false if the ruing buffer is full
 bool rbuf_is_empty(rbuf_ptr rbuf);
+
+// End of C wrapper
+#ifdef __cplusplus
+}
+#endif
 
 #endif // RING_BUF_H
 
