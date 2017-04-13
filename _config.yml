@@ -1,4 +1,5 @@
-theme: jekyll-theme-cayman
-
 title: [SmartSafe]
 description: [Creating a smart personal safe with multi factor authentication, traps that detect intrusion, and updates sent directly to your cellphone.]
+
+
+theme: jekyll-theme-cayman
