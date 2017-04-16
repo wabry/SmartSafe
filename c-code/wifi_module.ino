@@ -5,6 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <Adafruit_NeoPixel.h>
+#include <ESP8266mDNS.h>
 #include <EEPROM.h>
 
 #include "twilio.hpp"
@@ -56,6 +57,7 @@ char tempChar;
 
 // Global Webserver Objects
 ESP8266WebServer server(80);
+MDNSResponder mdns;
 String webPage = "";
 String lastTime;
 
@@ -115,6 +117,13 @@ void setup() {
         loadTimeFromEEPROM();
         updateWebpage();
 
+        if(!mdns.begin("smartsafe"))
+        {
+          #if USE_SOFTWARE_SERIAL == 1
+          Serial.println("error setting up mdns");
+          #endif
+        }
+        
         server.on("/", [](){
           server.send(200, "text/html", webPage);
         });
