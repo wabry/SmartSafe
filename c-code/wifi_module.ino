@@ -5,10 +5,12 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
 
 #include "twilio.hpp"
 #include "ring_buf.h"
 #include "packet.h"
+#include "webserver.h"
 
 // Use software serial for debugging?
 #define USE_SOFTWARE_SERIAL 0
@@ -24,6 +26,7 @@ Adafruit_NeoPixel leds = Adafruit_NeoPixel(2, 15, NEO_GRB + NEO_KHZ800);
 // Your network SSID and password
  const char* ssid = "Brennan's iPhone";
  const char* password = "z1rdw4fu0rq09";
+
 // api.twilio.com SHA1 fingerprint
  const char* fingerprint = "47 18 D6 BE F5 D0 BF CE 01 B7 AD BD 96 3A AA 46 F1 8C F1 A5";
 // Twilio account specific details, from https://twilio.com/console
@@ -50,6 +53,11 @@ rbuf_ptr rbuf = &rbuf_obj;
 char rbuf_arr[RBUF_SIZE];
 unsigned long rbuf_timer;
 char tempChar;
+
+// Global Webserver Objects
+ESP8266WebServer server(80);
+String webPage = "";
+String lastTime;
 
 // Bool for if we are ready to send a message
 bool readyToSend = false;
@@ -102,15 +110,19 @@ void setup() {
         while (WiFi.status() != WL_CONNECTED) delay(250);
         #endif
 
+        // Read in info from EEPROM & start the webpage
+        EEPROM.begin(512);
+        loadTimeFromEEPROM();
+        updateWebpage();
+
+        server.on("/", [](){
+          server.send(200, "text/html", webPage);
+        });
+        server.begin();
+
         // Connected to WiFi, set wifi led to green and send led to yellow
         leds.setPixelColor(0,0,255,0);
         leds.show();        
-
-        /*
-        // Set up a route to /message which will be the webhook url
-        twilio_server.on("/message", handle_message);
-        twilio_server.begin();
-        */
 }
 
 
@@ -173,6 +185,9 @@ void loop() {
           leds.show(); 
           rbuf_timer = millis();
         }
+
+        // Handle any webserver clients
+        server.handleClient();
         
         // Yield to allow ESP8266 utility functions (managing TCP/IP stack, keeping wifi connected) to run
         yield();

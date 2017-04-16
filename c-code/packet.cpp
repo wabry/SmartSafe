@@ -5,6 +5,7 @@
 #include "packet.h"
 #include "packet_defines.h"
 #include "ring_buf.h"
+#include "webserver.h"
 
 extern rbuf_ptr rbuf;
 extern String messageStr;
@@ -114,6 +115,8 @@ void processPacket()
 			if (packetIndex == PACKET_OPEN_LEN)
 			{
 				messageStr = "Your safe has been opened!";
+        saveTimeToEEPROM();
+        updateWebpage();
 				readyToSend = true;
 			}
      else
